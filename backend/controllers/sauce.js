@@ -9,7 +9,7 @@ exports.getAllSauces = (req, res, next) => {
 exports.getOneSauce = (req, res, next) => { 
     Sauce.findOne({_id : req.params.id})
     .then(sauce => res.status(200).json(sauce))
-    .catch(error => res.status(400).json({ error }))
+    .catch(error => res.status(400).json({ error : error}))
 };
 
 exports.createSauce = (req, res, next) => {
@@ -21,7 +21,7 @@ exports.createSauce = (req, res, next) => {
     });
     sauce.save() 
     .then( () => res.status(201).json({ message: 'Sauvegardé'}))
-    .catch( error => res.status(400).json({ error }))
+    .catch( error => res.status(400).json({ error : error }))
 };
 
 exports.updateSauce = (req, res, next) => {
@@ -32,7 +32,7 @@ exports.updateSauce = (req, res, next) => {
     } : { ...req.body };
     Sauce.updateOne({ _id: req.params.id} , {...sauceObject, _id: req.params.id})
     .then(()=> res.status(200).json({ message: 'Modifié'}))
-    .catch(()=> res.status(400).json({ error}))
+    .catch(()=> res.status(400).json({ error }))
 };
 
 exports.deleteSauce = (req, res, next) => {
