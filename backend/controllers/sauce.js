@@ -47,34 +47,64 @@ exports.deleteSauce = (req, res, next) => {
 
 exports.rateSauce = (req, res, next) => {
     const like = req.body.like;
-
-    if(like === 1) {
-
-        Sauce.updateOne({ _id: req.params.id }, { $inc: { likes: 1}, $push: { usersLiked: req.body.userId}, _id: req.params.id}) 
-        .then(() => res.status(200).json({ message: 'Like' }))
-        .catch(error => res.status(400).json({ error}))
-
-    } else if (like === -1) {
-
-        Sauce.updateOne({ _id: req.params.id }, { $inc: { dislikes: 1}, $push: { usersLiked: req.body.userId}, _id: req.params.id}) 
-        .then(() => res.status(200).json({ message: 'Dislike' }))
-        .catch(error => res.status(400).json({ error}))
-
-    } else {
-        Sauce.findOne( {_id: req.params.id})
-        .then( sauce => {
-            if( sauce.usersLiked.indexOf(req.body.userId)!== -1){
-                 sauce.updateOne({_id: req.params.id}, { $inc: { likes: -1},$pull: { usersLiked: req.body.userId}, _id: req.params.id })
-                .then( () => res.status(200).json({ message: 'Annulation du like' }))
-                .catch( error => res.status(400).json({ error}))
-                }
-                
-            else if( sauce.usersDisliked.indexOf(req.body.userId)!== -1) {
-                sauce.updateOne( {_id: req.params.id}, { $inc: { dislikes: -1 }, $pull: { usersDisliked: req.body.userId}, _id: req.params.id})
-                .then( () => res.status(200).json({ message: 'Annulation du dislike' }))
-                .catch( error => res.status(400).json({ error}))
-                }           
+    const userId = req.body.userId;
+  
+    // Cas 1: L'utilisateur annule son like ou son dislike
+    if (like === 0) {
+      Sauce.findOne({ _id: req.params.id })
+        .then((sauce) => {
+          // Si l'utilisateur a déjà liké la sauce, retirer le like et décrémenter le compteur de likes
+          if (sauce.usersLiked.includes(req.body.userId)) {
+            Sauce.updateOne(
+              { _id: req.params.id },
+              {
+                $pull: { usersLiked: req.body.userId },
+                $inc: { likes: -1 },
+                _id: req.params.id,
+              }
+            )
+              .then(() => res.status(200).json({ message: 'Like retiré' }))
+              .catch((error) => res.status(400).json({ error }));
+          }
+          // Si l'utilisateur a déjà disliké la sauce, retirer le dislike et décrémenter le compteur de dislikes
+          if (sauce.usersDisliked.includes(req.body.userId)) {
+            Sauce.updateOne(
+              { _id: req.params.id },
+              {
+                $pull: { usersDisliked: req.body.userId },
+                $inc: { dislikes: -1 },
+                _id: req.params.id,
+              }
+            )
+              .then(() => res.status(200).json({ message: 'Dislike retiré' }))
+              .catch((error) => res.status(400).json({ error }));
+          } else {
+            // Si l'utilisateur n'a pas encore liké ou disliké la sauce, ne rien faire
+            () => res.status(200).json({ message: 'Merci de nous donner votre avis' });
+          }
         })
-        .catch( error => res.status(400).json({ error})) 
+        .catch((error) => res.status(404).json({ error }));
+    } else if (like === 1) {
+        Sauce.updateOne(
+            { _id: req.params.id },
+            {
+              $push: { usersLiked: userId },
+              $inc: { likes: 1 },
+            }
+          )
+            .then(() => res.status(200).json({ message: 'Like ajouté' }))
+            .catch((error) => res.status(400).json({ error }));
+    } else {
+        Sauce.updateOne(
+            { _id: req.params.id },
+            {
+              $push: { usersDisliked: userId },
+              $inc: { dislikes: 1 },
+            }
+          )
+            .then(() => res.status(200).json({ message: 'Dislike ajouté' }))
+            .catch((error) => res.status(400).json({ error }));
     }
-};
+  
+    
+  };
