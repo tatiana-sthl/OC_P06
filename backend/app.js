@@ -1,14 +1,18 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const helmet = require('helmet');
 const path = require('path');
 
+// define the routes
 const userRoutes = require('./routes/user');
 const sauceRoutes = require('./routes/sauce');
 
+// initialize the secret of variables environment
 require('dotenv').config();
 
 const app = express();
 
+// connect to database
 mongoose.connect(process.env.DB_ACCESS,
     { useNewUrlParser: true,
      useUnifiedTopology: true 
@@ -16,7 +20,7 @@ mongoose.connect(process.env.DB_ACCESS,
     .then(() => console.log('Connexion à MongoDB réussie !'))
     .catch(() => console.log('Connexion à MongoDB échouée !'));
 
-
+// filter request and allow access to echange about back and front
 app.use((req, res, next) => 
 {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -26,8 +30,10 @@ app.use((req, res, next) =>
 });
 
 app.use(express.json());
+app.use(helmet());
+app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 
-
+// call the routes
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/api/auth', userRoutes);
 app.use('/api/sauces', sauceRoutes);
