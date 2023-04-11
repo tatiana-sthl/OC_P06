@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const helmet = require('helmet');
 const path = require('path');
 
-// define the routes
+// define the routes and their location in the code
 const userRoutes = require('./routes/user');
 const sauceRoutes = require('./routes/sauce');
 

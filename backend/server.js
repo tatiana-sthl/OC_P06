@@ -1,5 +1,9 @@
+// create a Node server
+
 const http = require('http');
 const app = require('./app');
+
+// determine on which port the server listens
 
 const normalizePort = val => {
   const port = parseInt(val, 10);
